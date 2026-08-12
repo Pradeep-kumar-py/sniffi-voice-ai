@@ -1,3 +1,5 @@
+from voice.services import create_vobiz_transport
+from pipecat.runner.types import WebSocketRunnerArguments
 from core.config import settings
 from agent.flow import create_initial_node
 from pipecat.transports.base_transport import BaseTransport, TransportParams
@@ -15,6 +17,7 @@ from pipecat.pipeline.pipeline import Pipeline
 from pipecat.pipeline.worker import PipelineParams, PipelineWorker
 from pipecat.flows import FlowManager, NodeConfig
 from pipecat.workers.runner import WorkerRunner
+from pipecat.runner.utils import create_transport
 
 
 transport_params = {
@@ -76,6 +79,7 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
     @transport.event_handler("on_client_connected")
     async def on_client_connected(transport, client):
         await flow_manager.initialize(create_initial_node())
+
     @transport.event_handler("on_client_disconnected")
     async def on_client_disconnected(transport, client):
         await worker.cancel()
@@ -83,3 +87,20 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
     runner = WorkerRunner(handle_sigint=runner_args.handle_sigint)
     await runner.add_workers(worker)
     await runner.run()
+
+
+
+async def bot(runner_args: RunnerArguments):
+    if isinstance(runner_args, WebSocketRunnerArguments):
+         transport = await create_vobiz_transport(runner_args.websocket)
+    else:
+        transport = await create_transport(runner_args,transport_params,)
+
+    await run_bot(transport,runner_args,)
+
+
+if __name__ == "__main__":
+    from pipecat.runner.run import main
+
+
+    main()

@@ -5,7 +5,9 @@ class Settings(BaseSettings):
     database_url: str
     groq_api_key: str | None = None
     deepgram_api_key: str | None = None
-    
+    vobiz_public_url: str | None = None
+    vobiz_auth_id: str | None = None
+    vobiz_auth_token: str | None = None
 
     model_config = SettingsConfigDict(
         env_file=".env",

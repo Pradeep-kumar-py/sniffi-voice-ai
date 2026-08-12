@@ -1,11 +1,10 @@
 from core.database import init_db
-from core.database import engine
-from core.database import Base
 from starlette.responses import FileResponse
 from contextlib import asynccontextmanager
 import uvicorn
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
+from voice.router import router as voice_router
 
 
 @asynccontextmanager
@@ -22,6 +21,8 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 def read_root():
     return FileResponse("static/index.html")
 
+
+app.include_router(voice_router)
 
 
 if __name__ == "__main__":
