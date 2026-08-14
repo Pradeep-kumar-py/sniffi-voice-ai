@@ -4,6 +4,7 @@ class Settings(BaseSettings):
     model: str = "groq:llama-3.3-70b-versatile"
     database_url: str
     groq_api_key: str | None = None
+    deepseek_api_key: str | None = None
     deepgram_api_key: str | None = None
     vobiz_public_url: str | None = None
     vobiz_auth_id: str | None = None

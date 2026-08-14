@@ -1,3 +1,4 @@
+from deepgram.requests import create_project_distribution_credentials_v1response_distribution_credentials
 from core.config import settings
 from fastapi import WebSocket
 from xml.sax.saxutils import escape
@@ -28,7 +29,7 @@ def get_vobiz_public_url() -> str:
     return public_url.rstrip("/")
 
 
-def build_vobiz_answer_xml() -> str:
+def build_vobiz_answer_xml(phone: str) -> str:
     """
     XML returned to Vobiz when a call is answered.
 
@@ -48,7 +49,7 @@ def build_vobiz_answer_xml() -> str:
         1,
     )
 
-    websocket_url = f"{websocket_url}/voice/ws"
+    websocket_url = f"{websocket_url}/voice/ws?phone={phone}"
 
     return f"""<?xml version="1.0" encoding="UTF-8"?>
             <Response>
@@ -89,6 +90,7 @@ async def create_vobiz_transport(
     #
     parsed = await parse_vobiz_start(websocket)
 
+    
     stream_id = parsed["stream_id"]
     call_id = parsed["call_id"]
 

@@ -29,6 +29,10 @@ class Customer(Base):
         String(20),
         nullable=True,
     )
+    pet_name: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True,
+    )
 
     pet_age: Mapped[str | None] = mapped_column(
         String(50),

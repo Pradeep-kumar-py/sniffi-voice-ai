@@ -1,3 +1,5 @@
+from agent.lib.customer_state import load_customer_state
+from agent.state import create_initial_state
 from voice.services import create_vobiz_transport
 from pipecat.runner.types import WebSocketRunnerArguments
 from core.config import settings
@@ -7,6 +9,7 @@ from pipecat.runner.types import RunnerArguments
 from pipecat.services.deepgram.stt import DeepgramSTTService
 from pipecat.services.deepgram.tts import DeepgramTTSService
 from pipecat.services.groq.llm import GroqLLMService
+from pipecat.services.deepseek.llm import DeepSeekLLMService
 from pipecat.processors.aggregators.llm_context import LLMContext
 from pipecat.processors.aggregators.llm_response_universal import (
     LLMContextAggregatorPair,
@@ -30,14 +33,19 @@ transport_params = {
 }
 
 
-async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
+async def run_bot(transport: BaseTransport, runner_args: RunnerArguments,phone:str):
+
     stt = DeepgramSTTService(api_key=settings.deepgram_api_key)
     tts = DeepgramTTSService(
         api_key=settings.deepgram_api_key,
         voice="aura-asteria-en",
         sample_rate=16000,
     )
-    llm = GroqLLMService(api_key=settings.groq_api_key)
+    
+
+    llm = DeepSeekLLMService(
+        api_key=settings.deepseek_api_key,
+    )
 
     context = LLMContext()
     context_aggregator = LLMContextAggregatorPair(
@@ -78,7 +86,18 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
 
     @transport.event_handler("on_client_connected")
     async def on_client_connected(transport, client):
+        print("🔥 CLIENT CONNECTED")
+
+        state = create_initial_state(phone)
+
+        state = await load_customer_state(phone, state)
+
+        flow_manager.state.update(state)
+
+        print("Final initial state:", flow_manager.state)
+
         await flow_manager.initialize(create_initial_node())
+
 
     @transport.event_handler("on_client_disconnected")
     async def on_client_disconnected(transport, client):
@@ -90,13 +109,14 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
 
 
 
-async def bot(runner_args: RunnerArguments):
+async def bot(runner_args: RunnerArguments, phone:str="8539885637"):
+
     if isinstance(runner_args, WebSocketRunnerArguments):
          transport = await create_vobiz_transport(runner_args.websocket)
     else:
         transport = await create_transport(runner_args,transport_params,)
 
-    await run_bot(transport,runner_args,)
+    await run_bot(transport,runner_args,phone)
 
 
 if __name__ == "__main__":
